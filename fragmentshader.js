@@ -4,9 +4,7 @@ precision mediump float;
 varying highp vec3 lighting;
 varying float fogness;
 void main(void){
-	//gl_FragColor = vec4(vColor.rgb, 0.5);
-	vec3 fogColor = vec3(0.628906, 0.78125, 0.886719);
-	vec3 color = vec3(0.5, 0.5, 0.5);
+	vec3 color = vec3(0.5, 0.5, 1.0);
 	color = color * lighting;
 	gl_FragColor = vec4(color, 1.0);
 }

@@ -2,13 +2,70 @@
 var renderer = new Renderer("renderCanvas");
 var controls;
 
-var file = "./cube_high.stl";
+var file = "./utah.stl";
+var ascii = false;
 
-loadFile(file, function(response){
-	parseSTL(response);
-});
+if(ascii){
+	loadAsciiFile(file, function(response){
+		parseAsciiStl(response);
+	});
+} else {
+	loadBinaryFile(file, function(response){
+		parseBinaryStl(response);
+	});
+}
 
-function parseSTL(stl){
+
+function parseBinaryStl(stl){
+	
+	stl = new DataView(stl);
+	
+	var stronk = "";
+	
+	for(var i = 0; i < 80; i++){
+		stronk += String.fromCharCode(stl.getUint8(i));
+	}
+	
+	console.log(stronk);
+	
+	var length = stl.getUint32(80, true);
+	
+	var normals = [];
+	var vertices = new Float32Array(length*3*3);
+	
+	var byteOffset = 84;
+	var vert = 0;
+	var norm = 0;
+	
+	for(var i = 0; i < length; i++){
+		var n = [];
+		for(var b = 0; b < 3; b++){
+			n.push(stl.getFloat32(byteOffset, true));
+			byteOffset += 4;
+		}
+		normals.push(n[0], n[1], n[2]);
+		normals.push(n[0], n[1], n[2]);
+		normals.push(n[0], n[1], n[2]);
+		
+		for(var a = 0; a < 3; a++){
+			for(var v = 0; v < 3; v++){
+				vertices[vert] = stl.getFloat32(byteOffset, true);
+				byteOffset += 4;
+				vert++;
+			}
+		}
+		
+		byteOffset += 2;
+	}
+	
+	console.log(length);
+	console.log(normals);
+	console.log(vertices);
+	
+	process3dData(vertices, normals);
+}
+
+function parseAsciiStl(stl){
 	var lines = stl.split("\n");
 	
 	for(var i = 0; i < lines.length; i++){
@@ -40,6 +97,22 @@ function parseSTL(stl){
 		}
 	}
 	
+	for(var i = 0; i < vertices.length; i++){
+		vertices[i] = parseFloat(vertices[i].trim());
+	}
+	
+	for(var i = 0; i < normals.length; i++){
+		normals[i] = parseFloat(normals[i].trim());
+	}
+	
+	vertices = Float32Array.from(vertices);
+	normals = Float32Array.from(normals);
+	
+	process3dData(vertices, normals);
+}
+
+function process3dData(vertices, normals){
+	
 	var max = 0;
 	var min = 0;
 	var span = 0;
@@ -49,7 +122,10 @@ function parseSTL(stl){
 	var spans = [0, 0, 0];
 	
 	for(var i = 0; i < vertices.length; i++){
-		vertices[i] = parseFloat(vertices[i].trim());
+		
+		if(!vertices[i]){
+			vertices[i] = 0;
+		}
 		
 		var n = i % 3;
 		
@@ -77,23 +153,23 @@ function parseSTL(stl){
 		var n = i%3;
 		
 		vertices[i] = vertices[i] - spans[n]/2;
-		vertices[i] = vertices[i]/span;
+		vertices[i] = vertices[i] / span;
 		//vertices[i] = vertices[i]/3;
 		/*if(i%3 == 0){
 			vertices[i]++;
 		}*/
-	}
 	
-	for(var i = 0; i < normals.length; i++){
-		normals[i] = parseFloat(normals[i].trim());
 	}
-	
-	vertices = Float32Array.from(vertices);
-	normals = Float32Array.from(normals);
 	
 	//.log(lines);
 	//console.log(vertices);
 	//console.log(normals);
+	
+	vertices = Float32Array.from(vertices);
+	normals = Float32Array.from(normals);
+	
+	console.log(normals);
+	console.log(vertices);
 	
 	renderer.addVertices(vertices, normals);
 	
@@ -103,7 +179,7 @@ function parseSTL(stl){
 }
 
 
-function loadFile(url, callback){
+function loadAsciiFile(url, callback){
 	
 	var xmlhttp;
 	xmlhttp = new XMLHttpRequest();
@@ -115,6 +191,23 @@ function loadFile(url, callback){
 	};
 	
 	xmlhttp.open("GET", url, true);
+	xmlhttp.send();
+	
+}
+
+function loadBinaryFile(url, callback){
+	
+	var xmlhttp;
+	xmlhttp = new XMLHttpRequest();
+	
+	xmlhttp.onreadystatechange = function(){
+		if (xmlhttp.readyState == 4){
+			callback(xmlhttp.response, xmlhttp.status, url);
+		}
+	};
+	
+	xmlhttp.open("GET", url, true);
+	xmlhttp.responseType = "arraybuffer";
 	xmlhttp.send();
 	
 }

@@ -11,6 +11,10 @@ html, body{
 	overflow: hidden;
 }
 
+body{
+	background-color: #FFFEEE;
+}
+
 #canvasContainer{
 	height: 100%;
 	width: 100%;
