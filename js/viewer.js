@@ -2,31 +2,52 @@
 var renderer = new Renderer("renderCanvas");
 var controls;
 
-var file = "./stl/utah.stl";
-var ascii = false;
+var file = "./stl/dna.stl";
 
-if(ascii){
-	loadAsciiFile(file, function(response){
-		parseAsciiStl(response);
-	});
-} else {
-	loadBinaryFile(file, function(response){
-		parseBinaryStl(response);
-	});
-}
+loadFile(file, function(response){
+	detectBinary(response);
+});
 
-
-function parseBinaryStl(stl){
-	
-	stl = new DataView(stl);
+function detectBinary(stl){
+	stlView = new DataView(stl);
 	
 	var header = "";
 	
 	for(var i = 0; i < 80; i++){
-		header += String.fromCharCode(stl.getUint8(i));
+		header += String.fromCharCode(stlView.getUint8(i));
 	}
 	
-	console.log("STL Header: "+header);
+	var binary = true;
+	if(header.match(/^\s*solid/i)){
+		binary = false;
+	}
+	
+	if(binary){
+		console.info("Detected binary STL file");
+		parseBinaryStl(stlView);
+	} else {
+		
+		console.info("Detected ASCII STL file");
+		
+		var stlString = "";
+		
+		if("TextDecoder" in window){
+			var enc = new TextDecoder("utf-8");
+			stlString = enc.decode(stlView);
+		} else {
+			console.warning("TextDecoder not supported, falling back to Array.reduce and String.fromCharCode...");
+			var arr = new Uint8Array(stl);
+			stlString = arr.reduce(function(str, charIndex) {
+				return str + String.fromCharCode(charIndex);
+			});
+		}
+		
+		parseAsciiStl(stlString);
+	}
+}
+
+
+function parseBinaryStl(stl){
 	
 	var length = stl.getUint32(80, true);
 	
@@ -163,24 +184,7 @@ function process3dData(vertices, normals){
 	//renderer.render();
 }
 
-
-function loadAsciiFile(url, callback){
-	
-	var xmlhttp;
-	xmlhttp = new XMLHttpRequest();
-	
-	xmlhttp.onreadystatechange = function(){
-		if (xmlhttp.readyState == 4){
-			callback(xmlhttp.responseText, xmlhttp.status, url);
-		}
-	};
-	
-	xmlhttp.open("GET", url, true);
-	xmlhttp.send();
-	
-}
-
-function loadBinaryFile(url, callback){
+function loadFile(url, callback){
 	
 	var xmlhttp;
 	xmlhttp = new XMLHttpRequest();
