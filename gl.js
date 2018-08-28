@@ -62,10 +62,20 @@ function Renderer(canvasId){
 
 		// Use the combined shader program object
 		gl.useProgram(shaderProgram);
+		
+		var vertInfo = gl.getShaderInfoLog(vertShader);
+		var fragInfo = gl.getShaderInfoLog(fragShader);
+		var programInfo = gl.getProgramInfoLog(shaderProgram);
 
-		console.log(gl.getShaderInfoLog(vertShader));
-		console.log(gl.getShaderInfoLog(fragShader));
-		console.log(gl.getProgramInfoLog(shaderProgram));
+		if(vertInfo){
+			console.info(vertInfo);
+		}
+		if(fragInfo){
+			console.info(fragInfo);
+		}
+		if(programInfo){
+			console.info(programInfo);
+		}
 
 
 		vertexBuffer = gl.createBuffer();
@@ -76,8 +86,8 @@ function Renderer(canvasId){
 
 	function addVertices(vertices, normals){
 
-		console.log(vertices.length);
-		console.log(normals.length);
+		//console.log(vertices.length);
+		//console.log(normals.length);
 
 		/*==========Defining and storing the geometry=======*/
 

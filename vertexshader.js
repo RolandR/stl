@@ -22,8 +22,9 @@ void main(void){
 	highp vec3 ambientLight = vec3(0.22, 0.25, 0.3);
     highp vec3 directionalLightColor = vec3(1.0, 1.0, 0.9);
     highp vec3 directionalVector = normalize(vec3(-1.5, -1.3, 0.8));
+    directionalVector = (vec4(directionalVector, 1.0)*model).xyz;
 
-	highp float directional = clamp(dot(normalize(vertexNormal), directionalVector), 0.0, 1.0);
+	highp float directional = dot(normalize(vertexNormal), directionalVector);
     lighting = ambientLight + (directionalLightColor * directional);
 
 	vec4 coords = vec4(coordinates, 1.0);
