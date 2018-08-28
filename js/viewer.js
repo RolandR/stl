@@ -20,13 +20,13 @@ function parseBinaryStl(stl){
 	
 	stl = new DataView(stl);
 	
-	var stronk = "";
+	var header = "";
 	
 	for(var i = 0; i < 80; i++){
-		stronk += String.fromCharCode(stl.getUint8(i));
+		header += String.fromCharCode(stl.getUint8(i));
 	}
 	
-	console.log(stronk);
+	console.log("STL Header: "+header);
 	
 	var length = stl.getUint32(80, true);
 	
@@ -58,9 +58,7 @@ function parseBinaryStl(stl){
 		byteOffset += 2;
 	}
 	
-	console.log(length);
-	console.log(normals);
-	console.log(vertices);
+	normals = Float32Array.from(normals);
 	
 	process3dData(vertices, normals);
 }
@@ -147,29 +145,16 @@ function process3dData(vertices, normals){
 	
 	var span = max - min;
 	
-	console.log(max, min, span);
+	//console.log(max, min, span);
 	
 	for(var i = 0; i < vertices.length; i++){
 		var n = i%3;
 		
 		vertices[i] = vertices[i] - spans[n]/2;
 		vertices[i] = vertices[i] / span;
-		//vertices[i] = vertices[i]/3;
-		/*if(i%3 == 0){
-			vertices[i]++;
-		}*/
+		
 	
 	}
-	
-	//.log(lines);
-	//console.log(vertices);
-	//console.log(normals);
-	
-	vertices = Float32Array.from(vertices);
-	normals = Float32Array.from(normals);
-	
-	console.log(normals);
-	console.log(vertices);
 	
 	renderer.addVertices(vertices, normals);
 	
