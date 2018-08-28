@@ -2,7 +2,7 @@
 var renderer = new Renderer("renderCanvas");
 var controls;
 
-var file = "./utah.stl";
+var file = "./stl/utah.stl";
 var ascii = false;
 
 if(ascii){
